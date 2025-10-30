@@ -2,7 +2,7 @@ FROM alpine:3.20
 
 WORKDIR /webssh
 
-COPY . .
+COPY start.sh Dockerfile ./
 
 EXPOSE 8888/tcp
 
