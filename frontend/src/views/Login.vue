@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="card" style="margin: 20px auto;">
-      <div class="title">WebSSH Console</div>
+    
       <el-form :model="sshInfo" label-position="top" class="form-grid">
                  <el-row :gutter="20">
            <el-col :span="12">
@@ -746,3 +746,4 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 </style>
+
