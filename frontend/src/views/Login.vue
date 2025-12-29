@@ -683,10 +683,36 @@ export default {
 .el-button--danger:hover { background-color: var(--danger-hover); border-color: var(--danger-hover); }
 .el-button--primary:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
 
-/* Deep Dialog Styles */
-::v-deep .dark-dialog { background: #2d2d2d; }
-::v-deep .dark-dialog .el-dialog__title { color: #fff; }
-::v-deep .dark-dialog .el-table { background-color: transparent; color: #fff; }
-::v-deep .dark-dialog .el-table th, ::v-deep .dark-dialog .el-table tr { background-color: transparent; }
-::v-deep .dark-dialog .el-table--enable-row-hover .el-table__body tr:hover>td { background-color: #444; }
+/* Deep Dialog Styles (深色弹窗样式适配) */
+::v-deep .dark-dialog { 
+  background: #2d2d2d; 
+}
+
+::v-deep .dark-dialog .el-dialog__title { 
+  color: #fff; 
+}
+
+/* 核心修复：表格背景透明 */
+::v-deep .dark-dialog .el-table { 
+  background-color: transparent; 
+  color: #e0e0e0; /* 默认文字颜色 */
+}
+
+::v-deep .dark-dialog .el-table th, 
+::v-deep .dark-dialog .el-table tr { 
+  background-color: transparent; 
+  border-bottom: 1px solid #444; /* 表格分割线颜色变暗 */
+}
+
+/* 核心修复：鼠标悬浮(hover)时的背景色 */
+::v-deep .dark-dialog .el-table--enable-row-hover .el-table__body tr:hover > td { 
+  background-color: #505050 !important; /* 强制改为深灰色背景 */
+  color: #ffffff !important;            /* 强制文字为亮白色 */
+}
+
+/* 修复表格底部那一根白线 */
+::v-deep .dark-dialog .el-table::before {
+  background-color: #444;
+}
 </style>
+
