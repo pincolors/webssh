@@ -718,8 +718,9 @@ export default {
 <style>
 /* 1. 强制覆盖鼠标悬浮时的背景色 (核心修复) */
 .dark-dialog .el-table--enable-row-hover .el-table__body tr:hover > td {
-  background-color: #454545 !important; /* 使用深灰色，而不是默认的白色 */
-  color: #ffffff !important;            /* 强制文字显示为白色 */
+  background-color: #555555 !important; /* 稍亮的深灰，确保在黑色背景下可见悬浮效果 */
+  color: #ffffff !important;            /* 强制文字显示为白色，高对比度避免遮挡 */
+  transition: background-color 0.2s ease; /* 添加平滑过渡，提升视觉效果 */
 }
 
 /* 2. 确保表格的基础背景是透明的，且文字是白色的 */
@@ -733,7 +734,8 @@ export default {
 .dark-dialog .el-table tr,
 .dark-dialog .el-table td {
   background-color: transparent !important;
-  border-bottom: 1px solid #444 !important; /* 分割线颜色 */
+  border-bottom: 1px solid #444 !important; /* 分割线颜色，保持可见但不刺眼 */
+  color: #e0e0e0 !important; /* 默认文字色为浅灰白，确保可读性 */
 }
 
 /* 3. 去掉表格底部的白线 */
@@ -748,6 +750,13 @@ export default {
 .dark-dialog .el-dialog__title {
   color: #fff !important;
 }
+
+/* 5. 额外修复：确保悬浮时不影响子元素或链接文字 */
+.dark-dialog .el-table--enable-row-hover .el-table__body tr:hover > td a,
+.dark-dialog .el-table--enable-row-hover .el-table__body tr:hover > td span {
+  color: #ffffff !important; /* 防止子元素文字被遮挡或变色 */
+}
 </style>
+
 
 
