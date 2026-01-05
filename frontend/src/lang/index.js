@@ -32,7 +32,8 @@ export function getLanguage() {
     }
     return 'zh'
 }
-const i18n = new VueI18n({
+import { createI18n } from 'vue-i18n'
+export default createI18n({
     // set locale
     // options: en | zh
     locale: getLanguage(),
