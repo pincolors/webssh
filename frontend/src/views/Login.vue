@@ -3,12 +3,19 @@
     
     <div class="top-right-wrapper">
       <div class="icon-btn setting-btn" @click="showGithubDialog = true" title="GitHub 云同步配置">
-        <i class="el-icon-setting"></i>
+       <el-icon><setting /></el-icon> 
+
       </div>
       <div class="theme-switch" @click="toggleTheme" title="切换主题">
-        <i class="fas" :class="isDarkTheme ? 'fa-sun' : 'fa-moon'"></i>
-      </div>
-    </div>
+        <el-icon :size="20">
+  <component :is="isDarkTheme ? 'Sunny' : 'Moon'" />
+</el-icon>
+
+<el-icon :size="20">
+  <Sunny v-if="isDarkTheme" />
+  <Moon v-else />
+</el-icon>
+
 
     <div class="card" style="margin: 20px auto;">
       <el-form :model="sshInfo" label-position="top" class="form-grid">
@@ -757,6 +764,7 @@ export default {
   color: #ffffff !important; /* 防止子元素文字被遮挡或变色 */
 }
 </style>
+
 
 
 
