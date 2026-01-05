@@ -19,7 +19,8 @@
 
         <el-dialog custom-class="uploadContainer" :title="$t(this.titleTip)" :visible.sync="uploadVisible" append-to-body width="32%">
             <el-upload ref="upload" multiple drag :action="uploadUrl" :data="uploadData" :before-upload="beforeUpload" :on-progress="uploadProgress" :on-success="uploadSuccess">
-                <i class="el-icon-upload"></i>
+                <el-icon><upload /></el-icon> 
+
                 <div class="el-upload__text">{{ $t(this.selectTip) }}</div>
                 <div class="el-upload__tip" slot="tip">{{ this.uploadTip }}</div>
             </el-upload>
