@@ -11,13 +11,11 @@ module.exports = {
   parallel: require('os').cpus().length > 1,
 
   devServer: {
-    disableHostCheck: false,
-    open: process.platform === 'darwin',
     host: '0.0.0.0',
     port: 8257,
     https: false,
-    hotOnly: false,
-    open: true,
+    open: true, // 自动打开浏览器
+    // hot: true, // 默认为 true，不需要显式写 hotOnly
     proxy: {
       '/api': {
         target: proxyTarget,
@@ -120,4 +118,5 @@ module.exports = {
     }
   }
 };
+
 
