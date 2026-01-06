@@ -3,39 +3,40 @@
   "version": "1.0.0",
   "private": true,
   "author": "eooce",
-    "scripts": {
+  "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
-  "dependencies": {   // <--- 补全引号和拼写
+  "dependencies": {
     "axios": "^1.9.0",
-    "element-ui": "^2.15.14",
+    "element-plus": "^2.5.0",
+    "@element-plus/icons-vue": "^2.3.0",
     "screenfull": "^5.2.0",
     "sortablejs": "^1.15.6",
-    "vue": "^2.7.16",
-    "vue-i18n": "^8.28.2",
-    "vue-router": "^3.6.5",
-    "vuex": "^3.6.2",
+    "vue": "^3.4.0",
+    "vue-i18n": "^9.9.0",
+    "vue-router": "^4.2.0",
+    "vuex": "^4.1.0",
     "xterm": "4.19.0",
     "xterm-addon-attach": "^0.6.0",
     "xterm-addon-fit": "^0.5.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~4.5.17",
-    "@vue/cli-plugin-eslint": "~4.5.17",
-    "@vue/cli-service": "~4.5.17",
-    "babel-eslint": "^10.1.0",
-    "babel-plugin-component": "^1.1.1",
-    "eslint": "^6.8.0",
-    "eslint-plugin-vue": "^7.20.0",
+    "@vue/cli-plugin-babel": "~5.0.8",
+    "@vue/cli-plugin-eslint": "~5.0.8",
+    "@vue/cli-service": "~5.0.8",
+    "@vue/compiler-sfc": "^3.4.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
     "sass": "^1.83.4",
-    "sass-loader": "^10.5.2",
-    "compression-webpack-plugin": "^6.1.1",
-    "vue-template-compiler": "^2.7.16"
+    "sass-loader": "^12.0.0",
+    "compression-webpack-plugin": "^6.1.1"
   },
   "browserslist": [
     "> 1%",
-    "last 2 versions"
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
   ]
 }
