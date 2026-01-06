@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "author": "eooce",
-  "scripts": {
-  "serve": "vue-cli-service serve",
-  "build": "vue-cli-service build",
-  "lint": "vue-cli-service lint"
-},
-dencies": {
+    "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {   // <--- 补全引号和拼写
     "axios": "^1.9.0",
     "element-ui": "^2.15.14",
     "screenfull": "^5.2.0",
