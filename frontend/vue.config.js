@@ -16,6 +16,29 @@ module.exports = {
     https: false,
     open: true, // 自动打开浏览器
     // hot: true, // 默认为 true，不需要显式写 hotOnly
+    // 替代旧版的 disableHostCheck
+    allowedHosts: 'all', 
+    
+    proxy: {
+      '/api': {
+        target: proxyTarget,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          '^/api': ''
+        }
+      },
+      '/ws': {
+        target: wsTarget,
+        changeOrigin: true,
+        ws: true,
+        pathRewrite: {
+          '^/ws': ''
+        }
+      }
+    }
+  },
+
     proxy: {
       '/api': {
         target: proxyTarget,
@@ -118,5 +141,6 @@ module.exports = {
     }
   }
 };
+
 
 
