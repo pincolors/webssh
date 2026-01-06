@@ -1,4 +1,4 @@
-\import { getLanguage } from '@/lang/index'
+import { getLanguage } from '@/lang/index'
 
 const state = () => ({
   sshInfo: {
