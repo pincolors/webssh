@@ -59,7 +59,7 @@ module.exports = {
     }
   },
 
-  configureWebpack: (config) => {
+  configureWebpack (config) => {
     config.performance = {
       hints: false
     };
@@ -141,6 +141,7 @@ module.exports = {
     }
   }
 };
+
 
 
 
