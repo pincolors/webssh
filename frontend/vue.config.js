@@ -96,15 +96,21 @@ module.exports = {
   chainWebpack: (config) => {
     config.plugins.delete('prefetch');
 
-    // 拷贝 public/img 到 ../public/static/img
-    config.plugin('copy').tap(() => {
+        // 拷贝 public/img 到 ../public/static/img
+    config.plugin('copy').tap((args) => {
+      // 注意：这里返回的必须是一个数组，代表传给插件构造函数的参数列表
+      // 参数1 必须是一个对象，且包含 patterns 属性
       return [
-        [
-          {
-            from: path.resolve(__dirname, 'public/img'),
-            to: path.resolve(__dirname, '../public/static/img')
-          }
-        ]
+        {
+          patterns: [
+            {
+              from: path.resolve(__dirname, 'public/img'),
+              to: path.resolve(__dirname, '../public/static/img'),
+              // Webpack 5 中建议加上这个，避免复制空文件夹报错
+              noErrorOnMissing: true 
+            }
+          ]
+        }
       ];
     });
 
@@ -114,3 +120,4 @@ module.exports = {
     }
   }
 };
+
