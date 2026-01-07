@@ -1,3 +1,7 @@
+// src/main.js 的第一行
+window.process = window.process || { env: { NODE_ENV: 'development' } }
+import { createApp } from 'vue'
+// ... 后面的代码保持不变
 import { createApp } from 'vue' // 1. 核心改变：引入 createApp
 import App from '@/App.vue'     // 建议加上 .vue 后缀，虽然不是必须的但更规范
 

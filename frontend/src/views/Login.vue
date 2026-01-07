@@ -79,7 +79,7 @@
           </el-button>
           
           <el-button type="primary" @click="onGenerateLink">
-            <el-icon style="margin-right: 5px"><Link /></el-icon> 生成链接
+            <el-icon style="margin-right: 5px"><LinkIcon /></el-icon> 生成链接
           </el-button>
           
           <el-button type="warning" :loading="githubLoading" @click="syncToGitHub">
@@ -171,18 +171,39 @@
 </template>
 
 <script>
-import axios from 'axios'
+// 1. 修正 Import 大写问题
+import axios from 'axios' 
 import { ElMessage } from 'element-plus'
-// 引入所需的 Element Plus 图标
+
+// 2. 引入图标，建议给 Link 起个别名防止冲突
 import { 
-  Setting, Sunny, Moon, FolderOpened, Refresh, Link, Upload, DocumentCopy, Delete 
+  Setting, 
+  Sunny, 
+  Moon, 
+  FolderOpened, 
+  Refresh, 
+  Link as LinkIcon, // 关键：重命名为 LinkIcon
+  Upload, 
+  DocumentCopy, 
+  Delete 
 } from '@element-plus/icons-vue'
 
 export default {
-  // 注册图标组件，以便在 template 中使用
+  // 3. 注册组件
   components: {
-    Setting, Sunny, Moon, FolderOpened, Refresh, Link, Upload, DocumentCopy, Delete
+    Setting, 
+    Sunny, 
+    Moon, 
+    FolderOpened, 
+    Refresh, 
+    LinkIcon, // 使用别名注册
+    Upload, 
+    DocumentCopy, 
+    Delete
   },
+  
+  // ... 你的 data() 和 methods 等其他代码 ...
+
   data () {
     return {
       sshInfo: {
