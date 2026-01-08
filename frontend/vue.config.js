@@ -1,6 +1,9 @@
 const { defineConfig } = require('@vue/cli-service')
 const path = require('path');
+
+// 你的后端地址
 const proxyTarget = 'http://127.0.0.1:8888';
+// 自动替换 http 为 ws 用于 websocket
 const wsTarget = proxyTarget.replace('http', 'ws');
 
 module.exports = defineConfig({
@@ -11,7 +14,7 @@ module.exports = defineConfig({
   lintOnSave: true,
   productionSourceMap: false,
   
-  // 2. 只有在非 Windows 平台或者多核 CPU 下开启并行构建，避免 Windows 下某些奇怪的报错
+  // 2. 并行构建配置
   parallel: require('os').cpus().length > 1,
 
   // 3. 开发服务器配置
@@ -20,8 +23,8 @@ module.exports = defineConfig({
     port: 8257,
     https: false,
     open: true,
-    allowedHosts: 'all', // 替代旧版 disableHostCheck
-       proxy: {
+    allowedHosts: 'all', 
+    proxy: {
       '/api': {
         target: proxyTarget,
         changeOrigin: true,
@@ -30,25 +33,22 @@ module.exports = defineConfig({
           '^/api': ''
         }
       },
-      // 修改点：直接代理 /term，这是 Go 后端定义的真实 WebSocket 路径
+      // 关键修复：这里使用 /term 而不是 /ws，避免和 Webpack 热更新冲突
       '/term': {
-        target: wsTarget, // 这里会自动使用 ws://127.0.0.1:8888
+        target: wsTarget,
         changeOrigin: true,
-        ws: true,
-        // 注意：不要写 pathRewrite，除非你需要改路径
+        ws: true
+        // 注意：连接后端时不需要 rewrite，因为后端就是监听 /term
       }
     }
+  }, // <--- 报错就是因为这里之前少了这个逗号！
 
-    }
-  }, // <--- 注意这里有逗号
-
-  // 4. Webpack 配置 (对象简写语法，最稳妥)
+  // 4. Webpack 配置
   configureWebpack(config) {
     config.performance = {
       hints: false
     };
 
-    // 生产环境优化配置
     if (process.env.NODE_ENV === 'production') {
       config.optimization = {
         splitChunks: {
@@ -81,7 +81,6 @@ module.exports = defineConfig({
         }
       };
 
-      // Gzip 压缩 (如果有安装插件才运行，防止报错)
       try {
         const CompressionPlugin = require('compression-webpack-plugin');
         config.plugins.push(
@@ -96,14 +95,13 @@ module.exports = defineConfig({
         console.warn('compression-webpack-plugin 未安装，跳过 Gzip 压缩');
       }
     }
-  }, // <--- 注意这里有逗号
+  }, // <--- 这里也需要逗号
 
   // 5. 链式 Webpack 配置
   chainWebpack(config) {
     config.plugins.delete('prefetch');
 
-    // 拷贝 public/img 到 ../public/static/img
-    // 修复了 Webpack 5 下 copy-webpack-plugin 的语法问题
+    // 修复 Webpack 5 下 copy-webpack-plugin 的语法
     config.plugin('copy').tap(() => {
       return [
         {
@@ -118,7 +116,6 @@ module.exports = defineConfig({
       ];
     });
 
-    // 生产环境不生成 source map
     if (process.env.NODE_ENV === 'production') {
       config.devtool(false);
     }

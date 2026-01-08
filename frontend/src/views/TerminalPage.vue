@@ -65,6 +65,23 @@ export default {
   }
 }
 </script>
-<style scoped>
-.terminal-page { min-height: 100vh; background: var(--bg-color); }
-</style> 
+ <style scoped>
+/* 1. 确保页面容器占满全屏 */
+.terminal-page {
+  width: 100vw;
+  height: 100vh;
+  background: #000; /* 强制背景为黑色，防止白屏刺眼 */
+  overflow: hidden; /* 防止出现双滚动条 */
+  display: flex;    /* 使用 Flex 布局 */
+  flex-direction: column;
+}
+
+/* 2. 强制让内部的 Terminal 组件占满剩余空间 */
+/* 注意：这里使用了深度选择器 :deep() 来影响子组件 */
+.terminal-page :deep(.terminal-container),
+.terminal-page :deep(#terminal) {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+}
+</style>

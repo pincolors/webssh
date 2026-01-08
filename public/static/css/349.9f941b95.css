@@ -1,0 +1,302 @@
+.file-list-wrapper{display:flex;flex-direction:column;height:100%;padding-top:10px;box-sizing:border-box}.file-list-wrapper .sftp-title{font-size:16px;font-weight:bold;color:var(--text-color);text-align:center;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--input-border);flex-shrink:0}.file-list-wrapper .file-header{flex-shrink:0;margin-bottom:10px;display:flex;align-items:center}.file-list-wrapper .path-input{flex:1;padding:0 5px;margin-right:2px}.file-list-wrapper .file-header .el-button-group .el-button{padding:8px;width:36px;height:32px;line-height:1}.file-list-wrapper .file-table{flex-grow:1;width:100%}.file-list-wrapper .file-table .el-table__body-wrapper{height:calc(100% - 40px) !important}.file-list-wrapper .file-table.el-table th{height:40px;padding:0}.file-list-wrapper .file-table.el-table td{padding:0}.file-list-wrapper .file-table .cell{padding:1px 0px 2px 5px;line-height:1.1}.file-list-wrapper .file-table .cell p{margin:0}.file-list-wrapper .file-table th>.cell{display:flex;align-items:center}.uploadContainer .el-upload{display:flex}.uploadContainer .el-upload-dragger{width:95%}
+/**
+ * Copyright (c) 2014 The xterm.js authors. All rights reserved.
+ * Copyright (c) 2012-2013, Christopher Jeffrey (MIT License)
+ * https://github.com/chjj/term.js
+ * @license MIT
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * Originally forked from (with the author's permission):
+ *   Fabrice Bellard's javascript vt100 for jslinux:
+ *   http://bellard.org/jslinux/
+ *   Copyright (c) 2011 Fabrice Bellard
+ *   The original design remains. The terminal itself
+ *   has been extended to include xterm CSI codes, among
+ *   other features.
+ */
+
+/**
+ *  Default styles for xterm.js
+ */
+
+.xterm {
+    cursor: text;
+    position: relative;
+    -moz-user-select: none;
+         user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+}
+
+.xterm.focus,
+.xterm:focus {
+    outline: none;
+}
+
+.xterm .xterm-helpers {
+    position: absolute;
+    top: 0;
+    /**
+     * The z-index of the helpers must be higher than the canvases in order for
+     * IMEs to appear on top.
+     */
+    z-index: 5;
+}
+
+.xterm .xterm-helper-textarea {
+    padding: 0;
+    border: 0;
+    margin: 0;
+    /* Move textarea out of the screen to the far left, so that the cursor is not visible */
+    position: absolute;
+    opacity: 0;
+    left: -9999em;
+    top: 0;
+    width: 0;
+    height: 0;
+    z-index: -5;
+    /** Prevent wrapping so the IME appears against the textarea at the correct position */
+    white-space: nowrap;
+    overflow: hidden;
+    resize: none;
+}
+
+.xterm .composition-view {
+    /* TODO: Composition position got messed up somewhere */
+    background: #000;
+    color: #FFF;
+    display: none;
+    position: absolute;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+.xterm .composition-view.active {
+    display: block;
+}
+
+.xterm .xterm-viewport {
+    /* On OS X this is required in order for the scroll bar to appear fully opaque */
+    background-color: #000;
+    overflow-y: scroll;
+    cursor: default;
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.xterm .xterm-screen {
+    position: relative;
+}
+
+.xterm .xterm-screen canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.xterm .xterm-scroll-area {
+    visibility: hidden;
+}
+
+.xterm-char-measure-element {
+    display: inline-block;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: -9999em;
+    line-height: normal;
+}
+
+.xterm.enable-mouse-events {
+    /* When mouse events are enabled (eg. tmux), revert to the standard pointer cursor */
+    cursor: default;
+}
+
+.xterm.xterm-cursor-pointer,
+.xterm .xterm-cursor-pointer {
+    cursor: pointer;
+}
+
+.xterm.column-select.focus {
+    /* Column selection mode */
+    cursor: crosshair;
+}
+
+.xterm .xterm-accessibility,
+.xterm .xterm-message {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 10;
+    color: transparent;
+}
+
+.xterm .live-region {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.xterm-dim {
+    opacity: 0.5;
+}
+
+.xterm-underline {
+    text-decoration: underline;
+}
+
+.xterm-strikethrough {
+    text-decoration: line-through;
+}
+
+.xterm-screen .xterm-decoration-container .xterm-decoration {
+	z-index: 6;
+	position: absolute;
+}
+
+.xterm-decoration-overview-ruler {
+    z-index: 7;
+    position: absolute;
+    top: 0;
+    right: 0;
+    pointer-events: none;
+}
+
+.xterm-decoration-top {
+    z-index: 2;
+    position: relative;
+}
+
+
+.terminal-page-wrapper[data-v-19d0f284] {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* 确保填满父容器 */
+  width: 100%;
+  background: #000; /* 强制黑色背景，避免闪白 */
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.terminal-page-container[data-v-19d0f284] {
+  display: flex;
+  flex: 1; /* 占据剩余空间 */
+  min-height: 0; /* 防止 flex 子元素溢出 */
+  overflow: hidden;
+  position: relative;
+}
+.terminal-area[data-v-19d0f284] {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: black;
+}
+
+/* 核心 CSS 修改：确保 Xterm 容器占满所有空间 */
+.xterm-container[data-v-19d0f284] {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding-left: 5px;
+  overflow: hidden; /* xterm 会自己处理滚动，容器不要滚动 */
+}
+
+/* 下面的样式保持不变，或者根据需要微调 */
+.file-tree[data-v-19d0f284] {
+  width: 350px;
+  border-left: 1px solid var(--input-border);
+  background: var(--input-bg);
+  display: flex;
+  flex-direction: column;
+}
+.terminal-footer[data-v-19d0f284] {
+  width: 100%;
+  text-align: center;
+  padding: 5px 0;
+  font-size: 15px;
+  color: #ccc; /* 页脚文字颜色改浅一点，适应黑色背景 */
+  background: #1a1a1a; /* 页脚背景深色 */
+  border-top: 1px solid #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.github-link[data-v-19d0f284] {
+  color: #ccc;
+  margin-left: 4px;
+  font-size: 18px;
+}
+.sftp-toggle-btn[data-v-19d0f284] {
+  display: none;
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 18px;
+  cursor: pointer;
+}
+@media (max-width: 768px) {
+.sftp-toggle-btn[data-v-19d0f284] {
+    display: inline-block;
+}
+.file-tree[data-v-19d0f284] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 85%;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 20;
+}
+.file-tree.is-visible[data-v-19d0f284] {
+    transform: translateX(0);
+}
+}
+
+
+/* 1. 确保页面容器占满全屏 */
+.terminal-page[data-v-5dbc5070] {
+  width: 100vw;
+  height: 100vh;
+  background: #000; /* 强制背景为黑色，防止白屏刺眼 */
+  overflow: hidden; /* 防止出现双滚动条 */
+  display: flex;    /* 使用 Flex 布局 */
+  flex-direction: column;
+}
+
+/* 2. 强制让内部的 Terminal 组件占满剩余空间 */
+/* 注意：这里使用了深度选择器 :deep() 来影响子组件 */
+.terminal-page[data-v-5dbc5070] .terminal-container,
+.terminal-page[data-v-5dbc5070] #terminal {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+}
+

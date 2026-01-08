@@ -715,7 +715,7 @@ export default {
 /* Variables */
 .login-container {
   --bg-color: #ffff;
-  --bg-image: url('/static/img/bg_light.webp');
+  --bg-image: url('~@/assets/img/bg_light.webp');
   --card-bg: hsl(0deg 0% 100% / 15%);
   --text-color: #3b3d3d;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -731,7 +731,7 @@ export default {
 
 .login-container.dark-theme {
   --bg-color: #ffffff;
-  --bg-image: url('/static/img/bg_dark.webp');
+  --bg-image: url('~@/assets/img/bg_dark.webp');
   --card-bg: hsl(0deg 0% 100% / 5%);
   --text-color: #e0e0e0;
   --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);

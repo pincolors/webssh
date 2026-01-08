@@ -1,24 +1,24 @@
 import axios from 'axios'
-import { Message } from 'element-ui'
-
+import {  ElMessage, ElMessageBox } from 'element-plus'
+import store from '@/store'
 function validateStatus(status) {
     switch (status) {
     case 400:
-        Message.error('请求出错')
+         ElMessage.error('请求出错')
         break
     case 403:
-        Message.warning({
-            message: '拒绝访问'
+         ElMessage.warning({
+             ElMessage: '拒绝访问'
         })
         break
     case 404:
-        Message.warning({
-            message: '请求错误,未找到该资源'
+         ElMessage.warning({
+             ElMessage: '请求错误,未找到该资源'
         })
         break
     case 500:
-        Message.warning({
-            message: '服务端错误'
+         ElMessage.warning({
+             ElMessage: '服务端错误'
         })
         break
     }
@@ -38,7 +38,7 @@ instance.interceptors.response.use(
     },
     err => {
         if (err.response === undefined && (!err.config || !err.config.cancelToken)) {
-            Message.error('连接服务器失败')
+             ElMessage.error('连接服务器失败')
         }
         return Promise.reject(err.response)
     }
