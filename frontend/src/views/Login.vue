@@ -83,7 +83,7 @@
           </el-button>
           
           <el-button type="warning" :loading="githubLoading" @click="syncToGitHub">
-            <el-icon style="margin-right: 5px"><Upload /></el-icon> 保存链接
+            <el-icon style="margin-right: 5px"><Upload /></el-icon> 保*存
           </el-button>
 
           <el-button type="info" @click="fetchCloudList">
