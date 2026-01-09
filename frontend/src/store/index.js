@@ -10,12 +10,16 @@ export default createStore({
   },
   getters: {
     // 构造连接字符串，Terminal.vue 会用到
-    sshReq: state => {
-      const s = state.sshInfo
-      if (!s) return ''
-      // 格式：username@hostname:port
-      return `${encodeURIComponent(s.username)}@${encodeURIComponent(s.hostname)}:${s.port}`
-    }
+  sshReq: state => {
+  const s = state.sshInfo
+  if (!s) return ''
+  // 1. 拼接原始字符串
+  const originStr = `${encodeURIComponent(s.username)}@${encodeURIComponent(s.hostname)}:${s.port}`
+  
+  // 2. 【核心修复】转为 Base64 发送给后端
+  return window.btoa(originStr)
+}
+
   },
   mutations: {
     // 设置 SSH 信息（TerminalPage.vue 会调用）
