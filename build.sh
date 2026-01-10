@@ -1,76 +1,60 @@
-#!/bin/bash
+# ==========================================
+# 第一阶段：编译前端 (Vue 3)
+# ==========================================
+FROM node:18-alpine AS frontend-builder
+WORKDIR /app/frontend
+# 忽略脚本错误，防止因环境差异导致的报错
+RUN npm config set unsafe-perm true
 
-# 编译配置
-BUILD_PATH="build"
-APP_NAME="webssh"
-MAIN_FILE="main.go"
-COMPRESS_TYPE="zip"  # 可选 zip 或 tar.gz
+COPY frontend/package*.json ./
+RUN npm install
 
-# 支持的平台列表
-PLATFORMS=(
-    "linux/386"
-    "linux/amd64"
-    "linux/arm"
-    "linux/arm64"
-    "linux/s390x"
-    "windows/amd64"
-    "windows/arm64"
-    "darwin/amd64"
-    "darwin/arm64"
-    "freebsd/amd64"
-)
+COPY frontend/ .
+# 这里的 .dockerignore 会起作用，防止本地 node_modules 干扰
+RUN npm run build
 
-# 清理并创建构建目录
-rm -rf $BUILD_PATH
-mkdir -p $BUILD_PATH
+# ==========================================
+# 第二阶段：编译后端 (Go)
+# ==========================================
+FROM golang:alpine AS backend-builder
 
-# 遍历所有平台进行编译
-for platform in "${PLATFORMS[@]}"; do
-    GOOS=${platform%/*}
-    GOARCH=${platform#*/}
-    
-    # 设置输出文件名
-    OUTPUT="$BUILD_PATH/${APP_NAME}_${GOOS}_${GOARCH}"
-    if [ "$GOOS" = "windows" ]; then
-        OUTPUT+=".exe"
-    fi
-    
-    echo "正在编译 $GOOS/$GOARCH ..."
-    
-    # 执行编译
-    GOOS=$GOOS GOARCH=$GOARCH CGO_ENABLED=0 \
-    go build -ldflags "-extldflags -static" \
-    -o $OUTPUT $MAIN_FILE
-    
-    # 检查是否编译成功
-    if [ $? -ne 0 ]; then
-        echo "编译失败: $GOOS/$GOARCH"
-        exit 1
-    else
-        echo "编译成功: $GOOS/$GOARCH"
-    fi
-    
-    chmod +x $OUTPUT
-done
+# 安装 git (go mod download 需要)
+RUN apk add --no-cache git
 
-# 创建压缩包
-echo "正在创建压缩包..."
-cd $BUILD_PATH
+# 设置代理，防止下载依赖超时
+ENV GOPROXY=https://proxy.golang.org,direct
 
-case $COMPRESS_TYPE in
-    "zip")
-        zip -r ../${APP_NAME}.zip .
-        ;;
-    "tar.gz")
-        tar -czvf ../${APP_NAME}.tar.gz .
-        ;;
-    *)
-        echo "未知的压缩类型: $COMPRESS_TYPE"
-        exit 1
-        ;;
-esac
+WORKDIR /app
 
-cd ..
+COPY go.mod go.sum ./
+RUN go mod download
 
-echo "构建完成！"
-echo "压缩包已创建: ${APP_NAME}.$COMPRESS_TYPE"
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o webssh-server main.go
+
+# ==========================================
+# 第三阶段：生成最终镜像 (Alpine)
+# ==========================================
+FROM alpine:3.20
+
+# 1. 安装基础库 + sed (用于修复换行符)
+RUN apk add --no-cache ca-certificates tzdata bash sed
+
+WORKDIR /app
+
+# 2. 复制编译好的文件
+COPY --from=backend-builder /app/webssh-server .
+# ⚠️ 注意：这里假设 Vue 打包输出在 public，如果是 dist 请自行修改
+COPY --from=frontend-builder /app/frontend/public ./public
+
+COPY start.sh .
+
+# 🔥🔥🔥 核心修复：移除 Windows 换行符 (\r) 🔥🔥🔥
+# 这一步能救命，无论你在 Windows 上怎么保存文件，这里都会强制修正
+RUN sed -i 's/\r$//' start.sh && \
+    chmod +x start.sh webssh-server
+
+EXPOSE 8888
+
+# 3. 启动命令
+CMD ["./start.sh"]
