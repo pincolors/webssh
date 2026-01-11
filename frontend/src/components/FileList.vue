@@ -1,43 +1,51 @@
 <template>
     <div class="file-list-wrapper">
         <div class="sftp-title">SFTP文件管理</div>
+
         <div class="file-header">
-            <el-input class="path-input" v-model="currentPath" size="small" @keyup.enter.native="getFileList()" @blur="getFileList" placeholder="当前路径..."></el-input>
+            <el-input class="path-input" v-model="currentPath" size="small" @keyup.enter="getFileList()" @blur="getFileList" placeholder="当前路径..."></el-input>
             <el-button-group>
-                <el-button type="primary" size="small" icon="el-icon-s-home" @click="goToHome()" title="主目录"></el-button>
-                <el-button type="primary" size="small" icon="el-icon-arrow-up" @click="upDirectory()" title="返回上级目录"></el-button>
-                <el-button type="primary" size="small" icon="el-icon-refresh" @click="getFileList()" title="刷新当前目录"></el-button>
-                <el-dropdown @click="openUploadDialog()" @command="handleUploadCommand" size="small">
-                    <el-button type="primary" size="small" icon="el-icon-upload"></el-button>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="file">{{ $t('uploadFile') }}</el-dropdown-item>
-                        <el-dropdown-item command="folder">{{ $t('uploadFolder') }}</el-dropdown-item>
-                    </el-dropdown-menu>
+                <el-button type="primary" size="small" :icon="HomeFilled" @click="goToHome()" title="主目录"></el-button>
+                <el-button type="primary" size="small" :icon="ArrowUp" @click="upDirectory()" title="返回上级目录"></el-button>
+                <el-button type="primary" size="small" :icon="Refresh" @click="getFileList()" title="刷新当前目录"></el-button>
+                
+                <el-dropdown trigger="click" @command="handleUploadCommand">
+                    <el-button type="primary" size="small" :icon="Upload" class="upload-btn-trigger"></el-button>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item command="file">{{ $t('uploadFile') }}</el-dropdown-item>
+                            <el-dropdown-item command="folder">{{ $t('uploadFolder') }}</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
                 </el-dropdown>
             </el-button-group>
         </div>
 
-        <el-dialog custom-class="uploadContainer" :title="$t(this.titleTip)" :visible.sync="uploadVisible" append-to-body width="32%">
+        <el-dialog custom-class="uploadContainer" :title="$t(titleTip)" v-model="uploadVisible" append-to-body width="32%">
             <el-upload ref="upload" multiple drag :action="uploadUrl" :data="uploadData" :before-upload="beforeUpload" :on-progress="uploadProgress" :on-success="uploadSuccess">
-                <el-icon><upload /></el-icon> 
-
-                <div class="el-upload__text">{{ $t(this.selectTip) }}</div>
-                <div class="el-upload__tip" slot="tip">{{ this.uploadTip }}</div>
+                <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+                <div class="el-upload__text">{{ $t(selectTip) }}</div>
+                <template #tip>
+                    <div class="el-upload__tip">{{ uploadTip }}</div>
+                </template>
             </el-upload>
         </el-dialog>
         
         <el-table :data="fileList" class="file-table" @row-click="rowClick" height="100%">
             <el-table-column
                 :label="$t('Name')"
-                width="140"
+                min-width="140"
                 sortable :sort-method="nameSort">
-                <template slot-scope="scope">
-                    <p v-if="scope.row.IsDir === true" style="color:#0c60b5;cursor:pointer;" class="el-icon-folder"> {{ scope.row.Name }}</p>
-                    <p v-else-if="scope.row.IsDir === false" style="cursor: pointer" class="el-icon-document"> {{ scope.row.Name }}</p>
+                <template #default="scope">
+                    <div style="display: flex; align-items: center; cursor: pointer;">
+                        <el-icon v-if="scope.row.IsDir" style="color:#0c60b5; margin-right: 5px; font-size: 16px;"><Folder /></el-icon>
+                        <el-icon v-else style="margin-right: 5px; font-size: 16px;"><Document /></el-icon>
+                        <span :style="{ color: scope.row.IsDir ? '#0c60b5' : 'inherit', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }">{{ scope.row.Name }}</span>
+                    </div>
                 </template>
             </el-table-column>
-            <el-table-column :label="$t('Size')" prop="Size" width="80"></el-table-column>
-            <el-table-column :label="$t('ModifiedTime')" prop="ModifyTime" width="120" sortable></el-table-column>
+            <el-table-column :label="$t('Size')" prop="Size" width="90"></el-table-column>
+            <el-table-column :label="$t('ModifiedTime')" prop="ModifyTime" width="160" sortable></el-table-column>
         </el-table>
     </div>
 </template>
@@ -45,11 +53,15 @@
 <script>
 import { fileList } from '@/api/file'
 import { mapState } from 'vuex'
+import { HomeFilled, ArrowUp, Refresh, Upload, UploadFilled, Folder, Document } from '@element-plus/icons-vue'
 
 export default {
     name: 'FileList',
     data() {
         return {
+            // 图标
+            HomeFilled, ArrowUp, Refresh, Upload, UploadFilled, Folder, Document,
+
             uploadVisible: false,
             fileList: [],
             downloadFilePath: '',
@@ -63,15 +75,18 @@ export default {
         }
     },
     mounted() {
-        // 组件挂载时，currentPath 为空或/，自动拉取
         if (!this.currentPath || this.currentPath === '/') {
             this.getFileList()
         }
     },
     computed: {
-        ...mapState(['currentTab']), // currentTab may be deprecated but keeping for now
+        ...mapState(['currentTab']),
         sshInfoReady() {
             return this.$store.state.sshInfo && this.$store.state.sshInfo.hostname;
+        },
+        passwordEncoded() {
+            const pwd = this.$store.state.sshInfo.password
+            return pwd ? window.btoa(pwd) : ''
         },
         uploadUrl: () => {
             return `${process.env.NODE_ENV === 'production' ? `${location.origin}` : 'api'}/file/upload`
@@ -79,19 +94,18 @@ export default {
         uploadData: function() {
             return {
                 sshInfo: this.$store.getters.sshReq,
+                password: this.passwordEncoded,
                 path: this.currentPath
             }
         }
     },
     watch: {
-        // Watch for sshInfo to become available
         sshInfoReady(newValue, oldValue) {
             if (newValue && !oldValue) {
                 this.getFileList();
             }
         },
         currentTab: function() {
-            // This logic might need adjustment if multi-tab is re-enabled
             this.fileList = []
             this.currentPath = this.currentTab && this.currentTab.path ? this.currentTab.path : '/';
         }
@@ -126,9 +140,9 @@ export default {
                 isFolder && this.$message.warning('当前浏览器不支持');
                 return;
             }
-            // Add folder support
             this.$nextTick(() => {
-                const input = document.getElementsByClassName('el-upload__input')[0];
+                // Element Plus 上传组件 input 获取方式可能略有不同，这里做兼容尝试
+                const input = document.querySelector('.uploadContainer .el-upload__input');
                 if (input) input.webkitdirectory = isFolder;
             })
         },
@@ -138,7 +152,6 @@ export default {
         beforeUpload(file) {
             this.uploadTip = `${this.$t('uploading')} ${file.name} ${this.$t('to')} ${this.currentPath}, ${this.$t('notCloseWindows')}..`
             this.uploadData.id = file.uid
-            // Is there a folder?
             const dirPath = file.webkitRelativePath;
             this.uploadData.dir = dirPath ? dirPath.substring(0, dirPath.lastIndexOf('/')) : '';
             return true
@@ -151,16 +164,11 @@ export default {
             e.percent = e.percent / 2
             f.percentage = f.percentage / 2
             if (e.percent === 50) {
-                const ws = new WebSocket(`${(location.protocol === 'http:' ? 'ws' : 'wss')}://${location.host}${process.env.NODE_ENV === 'production' ? '' : '/ws'}/file/progress?id=${f.uid}`)
+                const ws = new WebSocket(`${(location.protocol === 'http:' ? 'ws' : 'wss')}://${location.host}${process.env.NODE_ENV === 'production' ? '' : '/api'}/file/progress?id=${f.uid}`)
                 ws.onmessage = e1 => {
                     f.percentage = (f.size + Number(e1.data)) / (f.size * 2) * 100
                 }
-                ws.onclose = () => {
-                    console.log(Date(), 'onclose')
-                }
-                ws.onerror = () => {
-                    console.log(Date(), 'onerror')
-                }
+                ws.onclose = () => {}
             }
         },
         nameSort(a, b) {
@@ -168,11 +176,9 @@ export default {
         },
         rowClick(row) {
             if (row.IsDir) {
-                // Folder handling
                 this.currentPath = this.currentPath.charAt(this.currentPath.length - 1) === '/' ? this.currentPath + row.Name : this.currentPath + '/' + row.Name
                 this.getFileList()
             } else {
-                // File handling
                 this.downloadFilePath = this.currentPath.charAt(this.currentPath.length - 1) === '/' ? this.currentPath + row.Name : this.currentPath + '/' + row.Name
                 this.downloadFile()
             }
@@ -182,7 +188,8 @@ export default {
             if (this.currentPath === '') {
                 this.currentPath = '/'
             }
-            const result = await fileList(this.currentPath, this.$store.getters.sshReq)
+            const result = await fileList(this.currentPath, this.$store.getters.sshReq, this.passwordEncoded)
+            
             if (result.Msg === 'success') {
                 if (result.Data.home) {
                     this.homePath = result.Data.home;
@@ -192,7 +199,6 @@ export default {
                 } else {
                     this.fileList = result.Data.list
                 }
-                // 只要后端返回的home和当前路径不同且home不为/，就切换 (仅执行一次)
                 if (!this.initialRedirectDone && result.Data.home && result.Data.home !== '/' && this.currentPath !== result.Data.home) {
                     this.initialRedirectDone = true
                     this.currentPath = result.Data.home
@@ -223,7 +229,8 @@ export default {
         },
         downloadFile() {
             const prefix = process.env.NODE_ENV === 'production' ? `${location.origin}` : 'api'
-            const downloadUrl = `${prefix}/file/download?path=${this.downloadFilePath}&sshInfo=${this.$store.getters.sshReq}`
+            const safePass = encodeURIComponent(this.passwordEncoded)
+            const downloadUrl = `${prefix}/file/download?path=${this.downloadFilePath}&sshInfo=${this.$store.getters.sshReq}&password=${safePass}`
             window.open(downloadUrl)
         }
     }
@@ -237,15 +244,19 @@ export default {
     height: 100%;
     padding-top: 10px;
     box-sizing: border-box;
+    /* 确保背景色和你的主题一致，如果是暗色主题需要调整 */
+    background-color: var(--input-bg, #fff); 
 
+    /* 🔥 修复：标题样式 */
     .sftp-title {
         font-size: 16px;
         font-weight: bold;
-        color: var(--text-color);
+        /* 为了防止变量缺失导致看不见，我这里加了个备选颜色 */
+        color: var(--text-color, #303133); 
         text-align: center;
         padding-bottom: 8px;
         margin-bottom: 8px;
-        border-bottom: 1px solid var(--input-border);
+        border-bottom: 1px solid var(--input-border, #dcdfe6);
         flex-shrink: 0;
     }
 
@@ -254,55 +265,59 @@ export default {
         margin-bottom: 10px;
         display: flex;
         align-items: center;
+        padding: 0 5px;
     }
 
     .path-input {
         flex: 1;
-        padding: 0 5px;
-        margin-right: 2px;
+        margin-right: 5px;
+    }
+
+    /* 调整按钮组样式，确保对齐 */
+    .file-header .el-button-group {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
     }
 
     .file-header .el-button-group .el-button {
         padding: 8px;
-        width: 36px;
+        width: 32px;
         height: 32px;
-        line-height: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    /* 修正下拉按钮在 group 中的样式 */
+    .upload-btn-trigger {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        margin-left: -1px;
     }
 
     .file-table {
         flex-grow: 1;
         width: 100%;
-        & .el-table__body-wrapper {
-            height: calc(100% - 40px) !important; /* Adjust based on header height */
-        }
-        /* --- Style Customization for Compact Look --- */
-        &.el-table th {
+        /* 确保表格头部高度正常 */
+        & .el-table__header-wrapper th {
             height: 40px;
-            padding: 0;
+            padding: 4px 0;
+            background-color: var(--input-bg, #fff);
         }
-        &.el-table td {
-            padding: 0;
+        & .el-table__body-wrapper td {
+            padding: 2px 0;
         }
         .cell {
-            padding: 1px 0px 2px 5px;
-            line-height: 1.1;
-            p {
-              margin: 0;
-            }
+            padding-left: 5px;
+            line-height: 1.2;
         }
-        th > .cell {
-            display: flex;
-            align-items: center;
-        }
-        /* --- End Customization --- */
     }
 }
+/* 上传弹窗样式调整 */
 .uploadContainer {
-    .el-upload {
-        display: flex;
-    }
-    .el-upload-dragger {
-        width: 95%;
-    }
+    .el-upload { display: flex; flex-direction: column; align-items: center;}
+    .el-upload-dragger { width: 100%; }
+    .el-icon--upload { font-size: 60px; color: #c0c4cc; margin-bottom: 16px; line-height: 50px;}
 }
 </style>
