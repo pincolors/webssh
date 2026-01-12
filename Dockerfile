@@ -3,17 +3,15 @@
 # ==============================
 FROM node:18-alpine AS frontend-builder
 
-# 1. 设置工作目录为容器内的 /app/frontend
 WORKDIR /app/frontend
 
-# 2. 🔥关键修正：从宿主机的 frontend 目录复制配置文件的容器里🔥
-# 因为你的 Docker 构建上下文是根目录，所以要写 "frontend/xxx"
+# 复制前端配置文件
 COPY frontend/package.json frontend/package-lock.json ./
 
 # 安装依赖
 RUN npm install
 
-# 3. 🔥关键修正：复制 frontend 文件夹下的所有源码🔥
+# 复制前端源码
 COPY frontend/ .
 
 # 编译生成 dist
@@ -25,19 +23,27 @@ RUN npm run build
 # ==============================
 FROM golang:1.20-alpine AS backend-builder
 
+# 1. 🔥新增：安装 git (有些依赖需要 git 拉取)
+RUN apk add --no-cache git
+
 WORKDIR /app
 
-# 复制根目录下所有文件 (包含 Go 代码和原本的 public 目录)
+# 2. 🔥优化：先复制 go.mod 下载依赖 (利用缓存)
+COPY go.mod go.sum ./
+# 设置 Proxy 防止超时
+ENV GOPROXY=https://goproxy.io,direct
+RUN go mod download
+
+# 复制剩余代码
 COPY . .
 
-# 4. 🔥关键修正：把编译好的前端(dist) 覆盖到 Go 的静态资源目录(public)🔥
-# 前端编译结果在：/app/frontend/dist
-# Go 期望的位置在：./public (根据你的 main.go 代码逻辑)
-# 这步操作会用最新的 Vue 3 界面替换掉你 public 目录里的旧文件
+# 3. 复制前端编译好的文件到 public 目录
+# 确保 main.go 中的 //go:embed public/* 能找到文件
 COPY --from=frontend-builder /app/frontend/dist ./public
 
-# 编译 Go 程序
-RUN go build -o webssh main.go
+# 4. 🔥关键修正：禁用 CGO 进行静态编译🔥
+# 这能解决 Alpine 缺少 gcc 导致的 "build failed" 错误
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o webssh main.go
 
 
 # ==============================
@@ -45,9 +51,12 @@ RUN go build -o webssh main.go
 # ==============================
 FROM alpine:latest
 
+# 安装基础库 (可选，但在 Alpine 里有时需要 ca-certificates 来发 HTTPS 请求)
+RUN apk add --no-cache ca-certificates
+
 WORKDIR /root/
 
-# 复制最终的二进制文件
+# 复制二进制文件
 COPY --from=backend-builder /app/webssh .
 
 EXPOSE 8888
