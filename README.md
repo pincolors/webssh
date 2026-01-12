@@ -1,5 +1,18 @@
 # WebSSH
 
+**v2.0 更新**
+
+升级前端vue2到vue3，并重新构建后端:
+
+1. 后端重构 (Go)：修复了 common.go 和 file.go，手动实现了中间层逻辑，让旧版 API 完美适配新版前端。
+
+2. 前端升级 (Vue 3)：从 Vue 2 迁移到 Vue 3，修复了 WebSocket 代理，替换了 Element Plus 的所有图标，解决了 Table 和 Upload 组件的语法报错。
+
+3. 构建流水线 (Docker)：编写了多阶段构建（Multi-stage Build），解决了 Go 1.24 版本冲突，适配了子目录结构。
+
+4. 路径适配：最后通过 assetsDir: 'static' 打通了前后端资源的“最后一公里”，消灭了白屏。
+
+
 ## 项目简介
 
 WebSSH 是一个基于Go(后端)和Vue2(前端)的Web端SSH连接工具，集成SFTP文件管理
